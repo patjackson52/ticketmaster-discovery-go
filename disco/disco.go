@@ -1,3 +1,20 @@
+/*
+Basic Http client for Ticketmaster Discovery Api (http://developer.ticketmaster.com)
+
+Usage:
+discoGateway := disco.NewBuilder().
+				ApiKey("my key").
+				Logging(true).
+				Build()
+params := map[string]string{disco.KEYWORD: "Bruno mars"}
+results, err := discoGateway.SearchEvents(params)
+
+if err != nil {
+	log.Println(err.Error())
+}
+
+log.Println(results)
+*/
 package disco
 
 import (
@@ -6,40 +23,33 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"fmt"
+	"github.com/pkg/errors"
 )
 
+/**
+ * Interface for all Discovery Api endpoints
+ */
 type DiscoveryGateway interface {
 	SearchEvents(params map[string]string) (*EventSearchResult, error)
 }
 
 type discoveryGateway struct {
-	apiKey      string
-	baseUrl     string
-	prettyPrint bool
-	logLevel    LogLevel
+	apiKey  string
+	baseUrl string
+	log     bool
 }
-
-type LogLevel int
-
-const (
-	HEADERS LogLevel = 1 + iota
-	BODY
-	FULL
-)
 
 type DiscoGatewayBuilder interface {
 	ApiKey(string) DiscoGatewayBuilder
 	BaseUrl(string) DiscoGatewayBuilder
-	LogLevel(LogLevel) DiscoGatewayBuilder
-	PrettyPrint(bool) DiscoGatewayBuilder
+	Logging(bool) DiscoGatewayBuilder
 	Build() DiscoveryGateway
 }
 
 type discoveryGatewayBuilder struct {
-	apiKey      string
-	baseUrl     string
-	prettyPrint bool
-	logLevel    LogLevel
+	apiKey   string
+	baseUrl  string
+	logLevel bool
 }
 
 func (b *discoveryGatewayBuilder) ApiKey(apiKey string) DiscoGatewayBuilder {
@@ -52,30 +62,20 @@ func (b *discoveryGatewayBuilder) BaseUrl(baseUrl string) DiscoGatewayBuilder {
 	return b
 }
 
-func (b *discoveryGatewayBuilder) LogLevel(level LogLevel) DiscoGatewayBuilder {
-	b.logLevel = level
-	return b
-}
-
-func (b *discoveryGatewayBuilder) PrettyPrint(enable bool) DiscoGatewayBuilder {
-	b.prettyPrint = enable
+func (b *discoveryGatewayBuilder) Logging(enabled bool) DiscoGatewayBuilder {
+	b.logLevel = enabled
 	return b
 }
 
 func (b *discoveryGatewayBuilder) Build() DiscoveryGateway {
 	return &discoveryGateway{
-		apiKey:      b.apiKey,
-		baseUrl:     b.baseUrl,
-		prettyPrint: b.prettyPrint,
-		logLevel:    b.logLevel}
+		apiKey:   b.apiKey,
+		baseUrl:  b.baseUrl,
+		log: b.logLevel}
 }
 
 func NewBuilder() DiscoGatewayBuilder {
 	return &discoveryGatewayBuilder{}
-}
-
-func makeRequest(path string, result interface{}) {
-
 }
 
 func (e discoveryGateway) SearchEvents(params map[string]string) (*EventSearchResult, error) {
@@ -101,7 +101,7 @@ func (e discoveryGateway) SearchEvents(params map[string]string) (*EventSearchRe
 		return nil, err
 	}
 
-	if e.logLevel == FULL || e.logLevel == BODY {
+	if e.log  {
 		fmt.Println(string(body))
 	}
 
@@ -109,8 +109,8 @@ func (e discoveryGateway) SearchEvents(params map[string]string) (*EventSearchRe
 
 	if resp.StatusCode != http.StatusOK {
 		log.Println("Status: ", resp.Status)
-
-		log.Println("Status: ", string(body))
+		log.Println("Body: ", string(body))
+		return nil, errors.New(fmt.Sprint("Error completing discovery request. Status: ", resp.StatusCode))
 	}
 	jsonErr := json.Unmarshal(body, &results)
 	if jsonErr != nil {
@@ -120,4 +120,3 @@ func (e discoveryGateway) SearchEvents(params map[string]string) (*EventSearchRe
 
 	return &results, nil
 }
-

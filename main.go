@@ -8,8 +8,7 @@ import (
 func main() {
 	discoGateway := disco.NewBuilder().
 		ApiKey("9CN7uDxU7HuCe77157F6Ac3eG1Dg17pw").
-		LogLevel(disco.FULL).
-		PrettyPrint(true).
+		Logging(true).
 		Build()
 
 	params := map[string]string{disco.KEYWORD: "Bruno mars"}
