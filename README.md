@@ -1,4 +1,16 @@
-package main
+# ticketmaster-discovery-go
+
+Client library for Ticketmaster Discovery APIs in Go
+
+Usage:
+
+Grab the package:
+
+`go get github.com/patjackson52/ticketmaster-discovery-go/disco`
+
+Create a `DiscoveryGateway` instance with the builder, then fetch results with SearchEvents()
+
+```
 
 import (
 	"log"
@@ -21,3 +33,4 @@ func main() {
 	log.Println(results)
 	log.Println(len(results.EmbeddedEvents.Events))
 }
+```
