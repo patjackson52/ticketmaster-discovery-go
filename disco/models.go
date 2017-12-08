@@ -95,8 +95,13 @@ type Event struct {
 	Info            string           `json:"info"`
 	PleaseNore      string           `json:"pleaseNote"`
 	PriceRages      []PriceRange     `json:"priceRanges"`
-	Source          string           `json:"source"`
+	Source          Source           `json:"source"`
 	References      References       `json:"references"`
+}
+
+type Source struct {
+	Id string `json:"id"`
+	Name string `json:"name"`
 }
 
 type References struct {
@@ -231,4 +236,77 @@ type Attraction struct {
 type Embedded struct {
 	Venues      []Venue      `json:"venues"`
 	Attractions []Attraction `json:"attractions"`
+}
+
+type AttractionSearchResult struct {
+	EmbeddedAttractions EmbeddedAttractions `json:"_embedded"`
+	Links Links `json:"links"`
+	Page Page `json:"page"`
+}
+
+type EmbeddedAttractions struct {
+	Attractions []Attraction `json:"attractions"`
+}
+
+type VenueSearchResult struct {
+	EmbeddedVenue EmbeddedVenue `json:"_embedded"`
+	Page Page `json:"page"`
+	Links Links `json:"links"`
+}
+
+type EmbeddedVenue struct {
+	Venues []Venue `json:"venues"`
+}
+
+/**** BEGIN TOP PICKS ******/
+
+type TopPicksResponse struct {
+	Page Page `json:"page"`
+	Picks []Pick `json:"picks"`
+	EmbeddedOffers EmbeddedOffers `json:"_embedded"`
+}
+
+type Pick struct {
+	Type string `json:"type"`
+	Quality float32 `json:"quality"`
+	Section string `json:"section"`
+	Selection string `json:"selection"`
+	Row string `json:"row"`
+	Descriptions []string `json:"descriptions"`
+	Area Area `json:"area"`
+	SnapshotImageUrl string `json:"snapshotImageUrl"`
+	Offers []string `json:"offers"`
+	Seats []string `json:"seats"`
+}
+
+type Area struct {
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Description string `json:"description"`
+}
+
+type Offer struct {
+	OfferId string `json:"offerId"`
+	Name string `json:"name"`
+	TicketTypeId string `json:"ticketTypeId"`
+	PriceLevelId string `json:"priceLevelId"`
+	Description string `json:"description"`
+	Currency string `json:"currency"`
+	FaceValue float32 `json:"faceValue"`
+	TotalPrice float32 `json:"totalPrice"`
+	Charges []Charge `json:"charges"`
+}
+
+type Charge struct {
+	Reason string `json:"reason"`
+	Type string `json:"type"`
+	Amount float32 `json:"amount"`
+}
+type EmbeddedOffers struct {
+	Offer []Offer `json:"offer"`
+}
+
+type InventoryStatus struct {
+	EventId string `json:"eventId"`
+	Status string `json:"status"`
 }
