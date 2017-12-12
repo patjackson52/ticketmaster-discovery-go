@@ -84,16 +84,31 @@ func NewBuilder() DiscoGatewayBuilder {
 	return &discoveryGatewayBuilder{}
 }
 
-func (d discoveryGateway) doPostRequest(path string, body string) ([]byte, error) {
+func (d discoveryGateway) doPostRequest(path string, params map[string]string) ([]byte, error) {
 	url := fmt.Sprint(d.baseUrl, path)
 	reader := strings.NewReader(path)
-	req, err := http.Post(url, "application/json", reader)
+	req, reqErr := http.NewRequest("POST", url, reader)
+	if reqErr != nil {
+		log.Println(reqErr.Error())
+		return nil, reqErr
+	}
+
+	q := req.URL.Query()
+	q.Add("apikey", d.apiKey)
+	if params != nil {
+		for k, v := range params {
+			q.Add(k, v)
+		}
+	}
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := http.Post(req.URL.String(), "application/json", reader)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	result, readerErr := ioutil.ReadAll(req.Body)
+	result, readerErr := ioutil.ReadAll(resp.Body)
 
 	if readerErr != nil {
 		log.Println(err.Error())
@@ -231,19 +246,17 @@ func (d discoveryGateway) SearchVenues(params map[string]string) (*VenueSearchRe
 }
 
 func (d discoveryGateway) GetInventoryStatusDetails(eventIds []string) (*[]InventoryStatus, error) {
-	jsonStr, err := json.Marshal(eventIds)
-	if err != nil {
-		log.Println(err.Error())
-		return nil, err
-	}
-	body, err := d.doPostRequest("/inventory-status/v1/availability", string(jsonStr))
+	eventIdParams := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(eventIds)), ","), "[]")
+
+	body, err := d.doPostRequest("/inventory-status/v1/availability", map[string]string{"events": eventIdParams})
 	if err != nil {
 		return nil, err
 	}
 
+	fmt.Println(string(body))
 
 
-	var results []InventoryStatus = []InventoryStatus{}
+	var results []InventoryStatus
 
 	jsonErr := json.Unmarshal(body, &results)
 	if jsonErr != nil {
