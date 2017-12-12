@@ -8,7 +8,7 @@ import (
 
 func main() {
 	discoGateway := disco.NewBuilder().
-		ApiKey("9CN7uDxU7HuCe77157F6Ac3eG1Dg17pw").
+		ApiKey("my key").
 		BaseUrl("http://app.ticketmaster.com").
 		Logging(true).
 		Build()
